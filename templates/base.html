@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}Rastreamento KPIs{% endblock %}</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ─── VARIÁVEIS GLOBAIS ──────────────────────────────────────── */
+:root {
+  --bg:           #0b0f1a;
+  --surface:      #111827;
+  --surface2:     #1a2235;
+  --border:       #1e2d45;
+  --accent-blue:  #3b82f6;
+  --accent-cyan:  #06b6d4;
+  --accent-green: #22c55e;
+  --accent-red:   #ef4444;
+  --accent-amber: #f59e0b;
+  --accent-orange:#f97316;
+  --text-primary: #f1f5f9;
+  --text-secondary:#94a3b8;
+  --text-muted:   #475569;
+  --mono:         'Space Mono', monospace;
+  --sans:         'DM Sans', sans-serif;
+  --sidebar-w:    228px;
+  --radius:       12px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: var(--sans);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* grade de fundo */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    linear-gradient(rgba(59,130,246,0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59,130,246,0.035) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none; z-index: 0;
+}
+
+/* ─── SIDEBAR ────────────────────────────────────────────────── */
+.sidebar {
+  position: fixed;
+  left: 0; top: 0; bottom: 0;
+  width: var(--sidebar-w);
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  z-index: 200;
+  overflow: hidden;
+}
+
+.sidebar-logo {
+  padding: 26px 20px 22px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.logo-tag {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--accent-cyan);
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  display: flex; align-items: center; gap: 7px;
+}
+
+.logo-tag::before {
+  content: '';
+  width: 5px; height: 5px;
+  background: var(--accent-cyan);
+  border-radius: 50%;
+  flex-shrink: 0;
+  animation: blink 2s ease-in-out infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.3; transform: scale(0.75); }
+}
+
+.logo-name {
+  font-family: var(--mono);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.5px;
+  line-height: 1;
+}
+
+.logo-name span { color: var(--accent-blue); }
+
+.logo-period {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 7px;
+  letter-spacing: 0.5px;
+}
+
+.nav-section-label {
+  padding: 18px 20px 6px;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.nav-item {
+  display: flex; align-items: center; gap: 11px;
+  padding: 11px 20px;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  border-left: 3px solid transparent;
+  transition: all 0.18s ease;
+  position: relative;
+}
+
+.nav-item:hover {
+  color: var(--text-secondary);
+  background: rgba(255,255,255,0.025);
+  border-left-color: rgba(255,255,255,0.08);
+}
+
+.nav-item.active {
+  color: var(--accent-cyan);
+  border-left-color: var(--accent-cyan);
+  background: rgba(6,182,212,0.07);
+}
+
+.nav-icon {
+  font-size: 14px;
+  width: 18px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.nav-badge {
+  margin-left: auto;
+  background: var(--accent-red);
+  color: white;
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 99px;
+  min-width: 22px;
+  text-align: center;
+}
+
+.nav-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 10px 20px;
+  flex-shrink: 0;
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 14px 16px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.upload-btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%;
+  padding: 9px 14px;
+  background: rgba(59,130,246,0.1);
+  border: 1px solid rgba(59,130,246,0.28);
+  color: var(--accent-blue);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  text-decoration: none;
+  border-radius: 8px;
+  transition: all 0.18s ease;
+}
+
+.upload-btn:hover {
+  background: rgba(59,130,246,0.18);
+  border-color: var(--accent-blue);
+  color: #60a5fa;
+}
+
+/* ─── MAIN CONTENT ───────────────────────────────────────────── */
+.main {
+  margin-left: var(--sidebar-w);
+  min-height: 100vh;
+  position: relative;
+  z-index: 1;
+}
+
+body.no-sidebar .sidebar { display: none; }
+body.no-sidebar .main    { margin-left: 0; }
+
+.page-wrap {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px 32px 60px;
+}
+
+/* ─── PAGE HEADER ────────────────────────────────────────────── */
+.page-header {
+  display: flex; align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 40px;
+  gap: 16px; flex-wrap: wrap;
+}
+
+.page-header h1 {
+  font-family: var(--mono);
+  font-size: clamp(22px, 3vw, 34px);
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.5px;
+  line-height: 1.15;
+}
+
+.page-header h1 span { color: var(--accent-blue); }
+
+.page-header .sub {
+  color: var(--text-secondary);
+  font-size: 13px;
+  margin-top: 6px;
+  font-weight: 300;
+}
+
+.month-badge {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 20px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.month-badge .mb-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text-muted);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.month-badge .mb-val {
+  font-family: var(--mono);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--accent-cyan);
+  letter-spacing: -0.3px;
+}
+
+/* ─── SECTION TITLE ──────────────────────────────────────────── */
+.section-title {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+  display: flex; align-items: center; gap: 12px;
+}
+
+.section-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ─── UTILITÁRIOS ────────────────────────────────────────────── */
+.mb-32 { margin-bottom: 32px; }
+.mb-48 { margin-bottom: 48px; }
+
+.animate-up { animation: fadeUp 0.45s ease both; }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── FOOTER ─────────────────────────────────────────────────── */
+.footer {
+  text-align: center;
+  padding: 20px;
+  color: var(--text-muted);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 1px;
+  border-top: 1px solid var(--border);
+  margin-top: 12px;
+}
+
+{% block extra_css %}{% endblock %}
+</style>
+</head>
+<body{% if sem_dados %} class="no-sidebar"{% endif %}>
+
+{% if not sem_dados %}
+<!-- ─── SIDEBAR ──────────────────────────────────────────────── -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-tag">Rastreamento</div>
+    <div class="logo-name">KPI<span>S</span></div>
+    {% if nav_tem_dados %}
+    <div class="logo-period">{{ nav_mes_nome }} / {{ nav_ano }}</div>
+    {% endif %}
+  </div>
+
+  <div class="nav-section-label">Navegação</div>
+
+  <a href="{{ url_for('index') }}"
+     class="nav-item {% if pagina == 'dashboard' %}active{% endif %}">
+    <span class="nav-icon">▣</span> Dashboard
+  </a>
+
+  <a href="{{ url_for('sem_comunicacao') }}"
+     class="nav-item {% if pagina == 'sem_comunicacao' %}active{% endif %}">
+    <span class="nav-icon">⚠</span> Sem Comunicação
+    {% if nav_sem_comm > 0 %}
+    <span class="nav-badge">{{ nav_sem_comm }}</span>
+    {% endif %}
+  </a>
+
+  <a href="{{ url_for('cobranca') }}"
+     class="nav-item {% if pagina == 'cobranca' %}active{% endif %}">
+    <span class="nav-icon">◎</span> Cobrança
+  </a>
+
+  <div class="nav-divider"></div>
+
+  <div class="sidebar-footer">
+    <a href="{{ url_for('nova_planilha') }}" class="upload-btn">
+      ↑ &nbsp;Nova Planilha
+    </a>
+  </div>
+</nav>
+{% endif %}
+
+<!-- ─── CONTEÚDO ─────────────────────────────────────────────── -->
+<div class="main">
+  <div class="page-wrap">
+    {% block content %}{% endblock %}
+  </div>
+  <div class="footer">KPIs RASTREAMENTO · {{ nav_mes_nome }} {{ nav_ano }} · GERADO AUTOMATICAMENTE</div>
+</div>
+
+{% block scripts %}{% endblock %}
+</body>
+</html>

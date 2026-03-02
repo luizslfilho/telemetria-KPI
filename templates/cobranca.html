@@ -1,0 +1,534 @@
+{% extends "base.html" %}
+{% block title %}Cobrança — Rastreamento KPIs{% endblock %}
+
+{% block extra_css %}
+/* ─── BILLING HEADER ─────────────────────────────────────────── */
+.bill-header {
+  background: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(6,182,212,0.04));
+  border: 1px solid rgba(59,130,246,0.25);
+  border-radius: 12px 12px 0 0;
+  padding: 18px 24px;
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+}
+
+.bill-icon {
+  width: 34px; height: 34px;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px; flex-shrink: 0;
+}
+
+.bill-header .bh-text .bh-title {
+  font-family: var(--mono);
+  font-size: 13px; font-weight: 700;
+  color: var(--accent-cyan);
+}
+
+.bill-header .bh-text .bh-sub {
+  font-size: 12px; color: var(--text-muted); margin-top: 2px;
+}
+
+.grand-block { margin-left: auto; text-align: right; flex-shrink: 0; }
+
+.grand-label {
+  font-family: var(--mono);
+  font-size: 9px; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.grand-val {
+  font-family: var(--mono);
+  font-size: 22px; font-weight: 700;
+  color: var(--accent-cyan); letter-spacing: -0.5px;
+  transition: color 0.3s;
+}
+
+.grand-val.has-value { color: var(--accent-green); }
+
+/* ─── TABS ───────────────────────────────────────────────────── */
+.bill-tabs {
+  display: flex;
+  background: var(--surface2);
+  border-left: 1px solid rgba(59,130,246,0.2);
+  border-right: 1px solid rgba(59,130,246,0.2);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.btab {
+  padding: 11px 20px;
+  font-family: var(--mono);
+  font-size: 11px; letter-spacing: 1px; text-transform: uppercase;
+  color: var(--text-muted); cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease; user-select: none;
+  display: flex; align-items: center; gap: 10px;
+}
+
+.btab:hover { color: var(--text-secondary); }
+
+.btab.active {
+  color: var(--accent-cyan);
+  border-bottom-color: var(--accent-cyan);
+  background: rgba(6,182,212,0.05);
+}
+
+.btab-total {
+  font-family: var(--mono);
+  font-size: 10px; font-weight: 700;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  padding: 2px 9px; border-radius: 99px;
+  color: var(--text-muted);
+  min-width: 80px; text-align: center;
+  transition: all 0.3s;
+}
+
+.btab.active .btab-total { color: var(--accent-cyan); background: rgba(6,182,212,0.1); border-color: rgba(6,182,212,0.3); }
+.btab-total.filled { color: var(--accent-green) !important; background: rgba(34,197,94,0.1) !important; border-color: rgba(34,197,94,0.3) !important; }
+
+/* ─── TABLE WRAP ─────────────────────────────────────────────── */
+.bill-table-wrap {
+  background: var(--surface);
+  border: 1px solid rgba(59,130,246,0.16);
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+  overflow: hidden;
+}
+
+.btab-pane { display: none; }
+.btab-pane.active { display: block; }
+
+/* ─── QUICK BAR ──────────────────────────────────────────────── */
+.quick-bar {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px;
+  background: rgba(59,130,246,0.03);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.quick-bar label {
+  font-family: var(--mono); font-size: 10px;
+  letter-spacing: 1px; text-transform: uppercase;
+  color: var(--text-muted); white-space: nowrap;
+}
+
+.quick-input {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-family: var(--mono); font-size: 12px;
+  color: var(--text-primary); width: 120px;
+  outline: none; transition: border-color 0.15s;
+}
+
+.quick-input:focus { border-color: var(--accent-cyan); }
+
+.btn-apply {
+  background: rgba(6,182,212,0.1);
+  border: 1px solid rgba(6,182,212,0.28);
+  color: var(--accent-cyan);
+  font-family: var(--mono); font-size: 10px;
+  padding: 7px 14px; border-radius: 8px;
+  cursor: pointer; transition: all 0.15s; white-space: nowrap;
+}
+
+.btn-apply:hover { background: rgba(6,182,212,0.18); }
+
+.btn-clear {
+  background: rgba(239,68,68,0.07);
+  border: 1px solid rgba(239,68,68,0.2);
+  color: var(--accent-red);
+  font-family: var(--mono); font-size: 10px;
+  padding: 7px 14px; border-radius: 8px;
+  cursor: pointer; transition: all 0.15s;
+}
+
+.btn-clear:hover { background: rgba(239,68,68,0.13); }
+
+.btn-export {
+  background: transparent;
+  border: 1px solid var(--accent-amber);
+  color: var(--accent-amber);
+  font-family: var(--mono); font-size: 10px;
+  padding: 7px 14px; border-radius: 8px;
+  cursor: pointer; transition: all 0.15s;
+  margin-left: auto; white-space: nowrap;
+}
+
+.btn-export:hover { background: var(--accent-amber); color: var(--bg); }
+
+/* ─── TABLE ───────────────────────────────────────────────────── */
+.bill-table { width: 100%; border-collapse: collapse; }
+
+.bill-table thead th {
+  background: var(--surface2);
+  padding: 11px 14px;
+  font-family: var(--mono); font-size: 9px;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--text-muted); text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.th-r { text-align: right !important; }
+
+.bill-table tbody tr { border-bottom: 1px solid var(--border); transition: background 0.12s; }
+.bill-table tbody tr:hover { background: rgba(59,130,246,0.03); }
+
+.bill-table tbody td { padding: 9px 14px; font-size: 13px; color: var(--text-secondary); vertical-align: middle; }
+
+td.b-seq { font-family: var(--mono); font-size: 10px; color: var(--text-muted); width: 40px; }
+td.b-name { color: var(--text-primary); font-weight: 500; }
+td.b-id { font-family: var(--mono); font-size: 11px; color: var(--text-muted); }
+td.b-date { font-family: var(--mono); font-size: 11px; color: var(--text-muted); }
+td.b-val { text-align: right; width: 190px; }
+
+.val-wrap { display: flex; align-items: center; justify-content: flex-end; gap: 6px; }
+
+.cur { font-family: var(--mono); font-size: 10px; color: var(--text-muted); }
+
+.val-input {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-family: var(--mono); font-size: 13px;
+  color: var(--text-primary);
+  width: 130px; text-align: right;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.val-input:focus { border-color: var(--accent-cyan); box-shadow: 0 0 0 3px rgba(6,182,212,0.1); }
+.val-input::placeholder { color: var(--text-muted); font-size: 11px; }
+.val-input.filled { border-color: rgba(34,197,94,0.4); color: var(--accent-green); }
+
+/* Linha de total */
+.total-row { border-top: 2px solid rgba(6,182,212,0.25) !important; }
+.total-row td { padding: 13px 14px !important; background: rgba(6,182,212,0.05) !important; }
+.total-lbl { font-family: var(--mono) !important; font-size: 11px !important; color: var(--accent-cyan) !important; letter-spacing: 1px; text-transform: uppercase; }
+.total-val { font-family: var(--mono) !important; font-size: 16px !important; color: var(--accent-cyan) !important; text-align: right; }
+
+/* ─── NOT-COMM SECTION ────────────────────────────────────────── */
+.nocomm-bill-section {
+  border-top: 1px solid var(--border);
+  padding: 16px;
+}
+
+.nocomm-bill-title {
+  font-family: var(--mono);
+  font-size: 10px; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--text-muted);
+  margin-bottom: 12px;
+  display: flex; align-items: center; gap: 10px;
+}
+
+.nocomm-bill-title::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
+}
+
+.nocomm-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; flex-wrap: wrap; }
+
+.nocomm-name { flex: 1; font-size: 13px; color: var(--text-primary); min-width: 140px; }
+
+.nocomm-obs-badge {
+  font-family: var(--mono); font-size: 10px; font-weight: 700;
+  padding: 3px 9px; border-radius: 6px;
+}
+
+.nocomm-obs-badge.red    { background: rgba(239,68,68,0.12); color: var(--accent-red); border: 1px solid rgba(239,68,68,0.2); }
+.nocomm-obs-badge.muted  { background: rgba(71,85,105,0.15); color: var(--text-muted); border: 1px solid rgba(71,85,105,0.2); }
+
+/* ─── SUMMARY CHIPS ───────────────────────────────────────────── */
+.summary-chips {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.sum-chip {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 18px;
+  transition: border-color 0.3s;
+}
+
+.sum-chip.lit { border-color: rgba(6,182,212,0.35); }
+
+.sc-client {
+  font-family: var(--mono); font-size: 10px;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: var(--text-muted); margin-bottom: 6px;
+}
+
+.sc-val {
+  font-family: var(--mono); font-size: 18px;
+  font-weight: 700; color: var(--text-muted);
+  letter-spacing: -0.5px; transition: color 0.3s;
+}
+
+.sum-chip.lit .sc-val { color: var(--accent-cyan); }
+
+.sc-count { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>COBRANÇA<br><span>MENSAL</span></h1>
+    <div class="sub">Insira o valor por ativo comunicante para calcular o total</div>
+  </div>
+  <div class="month-badge">
+    <div class="mb-label">Referência</div>
+    <div class="mb-val">{{ mes_nome }} / {{ dados.ano }}</div>
+  </div>
+</div>
+
+<div style="margin-bottom:48px">
+  <!-- Header -->
+  <div class="bill-header">
+    <div class="bill-icon">💰</div>
+    <div class="bh-text">
+      <div class="bh-title">VALOR DE COBRANÇA — {{ mes_nome | upper }} / {{ dados.ano }}</div>
+      <div class="bh-sub">Ativos comunicantes · Valores individuais</div>
+    </div>
+    <div class="grand-block">
+      <div class="grand-label">Total Geral</div>
+      <div class="grand-val" id="grand-total">R$ 0,00</div>
+    </div>
+  </div>
+
+  <!-- Client tabs -->
+  <div class="bill-tabs">
+    {% for nome in dados.nomes %}
+    {% set c = dados.clientes[nome] %}
+    <div class="btab {% if loop.first %}active{% endif %}"
+         onclick="switchBTab('{{ nome | lower | replace(' ','_') }}', this)">
+      {{ nome | upper }}
+      <span class="btab-total" id="btab-total-{{ nome | lower | replace(' ','_') }}">R$ 0,00</span>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="bill-table-wrap">
+    {% for nome in dados.nomes %}
+    {% set c = dados.clientes[nome] %}
+    {% set ckey = nome | lower | replace(' ','_') %}
+
+    <div id="btab-{{ ckey }}" class="btab-pane {% if loop.first %}active{% endif %}">
+
+      <!-- Quick apply bar -->
+      <div class="quick-bar">
+        <label>Aplicar mesmo valor a todos:</label>
+        <input type="text" class="quick-input" id="quick-{{ ckey }}" placeholder="Ex: 150,00">
+        <button class="btn-apply" onclick="applyAll('{{ ckey }}')">▶ Aplicar</button>
+        <button class="btn-clear" onclick="clearAll('{{ ckey }}')">✕ Limpar</button>
+        <button class="btn-export" onclick="exportBilling('{{ nome }}', '{{ ckey }}')">↓ Exportar CSV</button>
+      </div>
+
+      <!-- Communicating assets table -->
+      <table class="bill-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Nome do Ativo</th>
+            <th>ID</th>
+            <th>Último Dado</th>
+            <th class="th-r">Valor (R$)</th>
+          </tr>
+        </thead>
+        <tbody id="bill-body-{{ ckey }}">
+          {% for ativo in c.lista_comm %}
+          <tr>
+            <td class="b-seq">{{ "%02d" % loop.index }}</td>
+            <td class="b-name">{{ ativo.Nome }}</td>
+            <td class="b-id">{{ ativo.ID }}</td>
+            <td class="b-date">{{ ativo.UltimoDado[:16] if ativo.UltimoDado | length > 10 else '—' }}</td>
+            <td class="b-val">
+              <div class="val-wrap">
+                <span class="cur">R$</span>
+                <input type="text" class="val-input"
+                       placeholder="0,00"
+                       data-client="{{ ckey }}"
+                       data-nome="{{ ativo.Nome }}"
+                       data-id="{{ ativo.ID }}"
+                       data-ultimo="{{ ativo.UltimoDado }}"
+                       oninput="onValChange(this)">
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+        <tr class="total-row">
+          <td colspan="4" class="total-lbl">Total {{ nome }}</td>
+          <td class="total-val" id="total-{{ ckey }}">R$ 0,00</td>
+        </tr>
+      </table>
+
+      <!-- Non-comm assets marked as "cobrar" -->
+      {% set cobrar_list = c.lista_no_comm | selectattr('obs_cobrar', 'eq', True) | selectattr('obs_tipo', 'ne', '') | list %}
+      {% if cobrar_list %}
+      <div class="nocomm-bill-section">
+        <div class="nocomm-bill-title">Não comunicantes a cobrar (falha no equipamento)</div>
+        {% for ativo in cobrar_list %}
+        <div class="nocomm-row">
+          <div class="nocomm-name">{{ ativo.Nome }}</div>
+          <span class="nocomm-obs-badge red">{{ ativo.obs_label }}</span>
+          <div class="val-wrap" style="margin-left:auto">
+            <span class="cur">R$</span>
+            <input type="text" class="val-input"
+                   placeholder="0,00"
+                   data-client="{{ ckey }}"
+                   data-nome="{{ ativo.Nome }}"
+                   data-id="{{ ativo.ID }}"
+                   data-ultimo="{{ ativo.UltimoDado }}"
+                   oninput="onValChange(this)">
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Summary chips -->
+  <div class="summary-chips">
+    {% for nome in dados.nomes %}
+    {% set ckey = nome | lower | replace(' ','_') %}
+    {% set c = dados.clientes[nome] %}
+    <div class="sum-chip" id="chip-{{ ckey }}">
+      <div class="sc-client">{{ nome }}</div>
+      <div class="sc-val" id="chip-val-{{ ckey }}">R$ 0,00</div>
+      <div class="sc-count">{{ c.comunicantes }} ativos comunicantes</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // ─── UTILS ────────────────────────────────────────────────────
+  function fmtBRL(val) {
+    return 'R$ ' + val.toFixed(2)
+      .replace('.', ',')
+      .replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  }
+
+  function parseVal(str) {
+    const clean = (str || '').replace(/[R$\s.]/g, '').replace(',', '.');
+    const n = parseFloat(clean);
+    return isNaN(n) ? 0 : n;
+  }
+
+  // ─── VALUE CHANGE ─────────────────────────────────────────────
+  function onValChange(input) {
+    input.classList.toggle('filled', input.value.trim() !== '');
+    recalcClient(input.dataset.client);
+  }
+
+  function recalcClient(ckey) {
+    const inputs = document.querySelectorAll(`.val-input[data-client="${ckey}"]`);
+    let sum = 0;
+    inputs.forEach(i => sum += parseVal(i.value));
+
+    const fmt = fmtBRL(sum);
+    const el = document.getElementById('total-' + ckey);
+    if (el) el.textContent = fmt;
+
+    const badge = document.getElementById('btab-total-' + ckey);
+    if (badge) {
+      badge.textContent = fmt;
+      badge.classList.toggle('filled', sum > 0);
+    }
+
+    const chipVal = document.getElementById('chip-val-' + ckey);
+    if (chipVal) chipVal.textContent = fmt;
+
+    const chip = document.getElementById('chip-' + ckey);
+    if (chip) chip.classList.toggle('lit', sum > 0);
+
+    recalcGrand();
+  }
+
+  function recalcGrand() {
+    let grand = 0;
+    document.querySelectorAll('.val-input').forEach(i => grand += parseVal(i.value));
+    const el = document.getElementById('grand-total');
+    el.textContent = fmtBRL(grand);
+    el.classList.toggle('has-value', grand > 0);
+  }
+
+  // ─── TABS ─────────────────────────────────────────────────────
+  function switchBTab(key, el) {
+    document.querySelectorAll('.btab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.btab-pane').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('btab-' + key).classList.add('active');
+  }
+
+  // ─── APPLY ALL ────────────────────────────────────────────────
+  function applyAll(ckey) {
+    const raw = document.getElementById('quick-' + ckey).value;
+    if (!raw.trim()) return;
+    document.querySelectorAll(`.val-input[data-client="${ckey}"]`).forEach(i => {
+      i.value = raw;
+      i.classList.add('filled');
+    });
+    recalcClient(ckey);
+  }
+
+  function clearAll(ckey) {
+    document.querySelectorAll(`.val-input[data-client="${ckey}"]`).forEach(i => {
+      i.value = '';
+      i.classList.remove('filled');
+    });
+    const q = document.getElementById('quick-' + ckey);
+    if (q) q.value = '';
+    recalcClient(ckey);
+  }
+
+  // ─── EXPORT CSV ───────────────────────────────────────────────
+  function exportBilling(nome, ckey) {
+    const inputs = document.querySelectorAll(`.val-input[data-client="${ckey}"]`);
+    const header = ['Nº','Nome','ID','Últimos dados processados','Status','Valor (R$)','Mês de Referência'];
+    const rows = [];
+    let total = 0;
+    let idx = 1;
+
+    inputs.forEach(inp => {
+      const val = parseVal(inp.value);
+      total += val;
+      const status = inp.closest('.nocomm-row') ? 'Não Comunicante (Cobrar)' : 'Comunicante';
+      rows.push([
+        idx++,
+        `"${inp.dataset.nome}"`,
+        inp.dataset.id,
+        `"${inp.dataset.ultimo}"`,
+        status,
+        val.toFixed(2).replace('.', ','),
+        '{{ mes_nome }}/{{ dados.ano }}'
+      ]);
+    });
+
+    rows.push(['','TOTAL','','','', total.toFixed(2).replace('.', ','), '']);
+
+    const csv = '\uFEFF' + [header.join(';'), ...rows.map(r => r.join(';'))].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url;
+    a.download = `Cobranca_${nome}_{{ mes_nome }}{{ dados.ano }}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+</script>
+{% endblock %}
